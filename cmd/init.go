@@ -4,10 +4,14 @@ Copyright © 2026 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"bufio"
+	"debugo_cli/api"
 	"debugo_cli/buildtree"
+	"debugo_cli/metadata"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -44,6 +48,37 @@ var initCmd = &cobra.Command{
 
 		fmt.Println("✓ Created .debugo directory")
 
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Println("\nEnter project name: ")
+		projectName, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error reading input: %v\n", err)
+			os.Exit(1)
+		}
+
+		projectName = strings.TrimSpace(projectName)
+
+		if projectName == "" {
+			fmt.Fprintf(os.Stderr, "Project name cannot be empty\n")
+			os.Exit(1)
+		}
+
+		//API call
+		fmt.Printf("\nRegistering project '%s'...\n", projectName)
+		projectID, err := api.CreateProjectOnServer(projectName)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating project on server: %v\n", err)
+			os.Exit(1)
+		}
+
+		fmt.Printf("✓ Project registered successfully (ID: %s)\n", projectID)
+
+		if err := metadata.SaveMetadata(debugoDir, projectID, projectName); err != nil {
+			fmt.Fprintf(os.Stderr, "Error saving metadata: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Println("✓ Metadata saved to .debugo/metadata.json")
+
 		fmt.Println("Building project tree...")
 		tree, err := buildtree.BuildTree(absPath)
 		if err != nil {
@@ -65,15 +100,5 @@ var initCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(initCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// initCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// initCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	initCmd.Flags().StringP("output", "o", ".debugo", "Output directory for debugo files")
 }

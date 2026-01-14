@@ -99,7 +99,6 @@ func detectLanguage(filename string) string {
 	// if hasShebang(filename) {
 	//     return detectFromShebang(filename)
 	// }
-
 	return "unknown"
 }
 
