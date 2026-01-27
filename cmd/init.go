@@ -7,6 +7,7 @@ import (
 	"bufio"
 	"debugo_cli/api"
 	"debugo_cli/buildtree"
+	"debugo_cli/logrecord"
 	"debugo_cli/metadata"
 	"fmt"
 	"os"
@@ -73,7 +74,27 @@ var initCmd = &cobra.Command{
 
 		fmt.Printf("✓ Project registered successfully (ID: %s)\n", projectID)
 
-		if err := metadata.SaveMetadata(debugoDir, projectID, projectName); err != nil {
+		permreader := bufio.NewReader(os.Stdin)
+		fmt.Println("Enable auto-recording of project logs? (y/n): ")
+
+		perm, err := permreader.ReadString('\n')
+		if err != nil {
+			fmt.Println("Failed to read input:", err)
+			return
+		}
+
+		perm = strings.TrimSpace(strings.ToLower(perm))
+		isAuto := false
+
+		if perm == "y" || perm == "yes" {
+			fmt.Println("Auto-recording enabled. Logs will be recorded automatically.")
+			isAuto = true
+		} else {
+			fmt.Println("Auto-recording disabled.")
+			fmt.Println("👉 Use the `debug record` command to manually record logs when needed.")
+		}
+
+		if err := metadata.SaveMetadata(debugoDir, projectID, projectName, isAuto); err != nil {
 			fmt.Fprintf(os.Stderr, "Error saving metadata: %v\n", err)
 			os.Exit(1)
 		}
@@ -92,6 +113,12 @@ var initCmd = &cobra.Command{
 			os.Exit(1)
 		}
 		fmt.Println("✓ Tree saved to .debugo/tree.json")
+
+		autorecorderr := logrecord.CreateHookShell()
+
+		if autorecorderr != nil {
+			fmt.Println("Error initializing the auto log capture", err)
+		}
 
 		fmt.Println("\n🎉 Debugo initialized successfully!")
 

@@ -7,14 +7,16 @@ import (
 )
 
 type ProjectMetadata struct {
-	ProjectID   string `json:"project_id"`
-	ProjectName string `json:"project_name"`
+	ProjectID    string `json:"project_id"`
+	ProjectName  string `json:"project_name"`
+	IsAutoRecord bool   `json:"is_auto_record"`
 }
 
-func SaveMetadata(debugoDir string, projectID string, projectname string) error {
+func SaveMetadata(debugoDir string, projectID string, projectname string, isAutoRecord bool) error {
 	metaData := ProjectMetadata{
-		ProjectID:   projectID,
-		ProjectName: projectname,
+		ProjectID:    projectID,
+		ProjectName:  projectname,
+		IsAutoRecord: isAutoRecord,
 	}
 
 	data, err := json.MarshalIndent(metaData, "", " ")
