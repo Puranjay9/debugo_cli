@@ -75,7 +75,7 @@ var initCmd = &cobra.Command{
 		fmt.Printf("✓ Project registered successfully (ID: %s)\n", projectID)
 
 		permreader := bufio.NewReader(os.Stdin)
-		fmt.Println("Enable auto-recording of project logs? (y/n): ")
+		fmt.Println("Enable auto-recording of project logs with non-zero exit codes only? (y/n): ")
 
 		perm, err := permreader.ReadString('\n')
 		if err != nil {
@@ -87,10 +87,10 @@ var initCmd = &cobra.Command{
 		isAuto := false
 
 		if perm == "y" || perm == "yes" {
-			fmt.Println("Auto-recording enabled. Logs will be recorded automatically.")
+			fmt.Println("Auto-recording enabled. Logs will be recorded automatically for non-zero exits.")
 			isAuto = true
 		} else {
-			fmt.Println("Auto-recording disabled.")
+			fmt.Println("Auto-recording disabled. ")
 			fmt.Println("👉 Use the `debug record` command to manually record logs when needed.")
 		}
 
